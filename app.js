@@ -37,35 +37,28 @@ let isAdminAuthenticated = false;
 let isEditMode = false;
 let selectedBoxIndex = null;
 
-    // Initial Setup/Sync
-    const initSync = async () => {
-        const docSnap = await getDoc(DOC_REF);
-        if (!docSnap.exists()) {
-            // Initial state if Firestore is empty
-            const initialState = {
-                boxes: Array(6).fill(null).map((_, i) => ({
-                    id: Date.now() + i,
-                    claimed: false,
-                    name: null,
-                    secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
-                }))
-            };
-            await setDoc(DOC_REF, initialState);
-        }
-        
-        // Listen for real-time updates
-        onSnapshot(DOC_REF, (doc) => {
-            if (doc.exists()) {
-                state = doc.data();
-                updateUI();
-            } else {
-                console.log("Initializing Firestore document...");
-                initSync();
-            }
-        }, (error) => {
-            console.error("Firestore sync error:", error);
-        });
+// Initial Setup/Sync
+const initSync = async () => {
+    console.log("Forcing initialization of 6 boxes...");
+    const initialState = {
+        boxes: Array(6).fill(null).map((_, i) => ({
+            id: Date.now() + i,
+            claimed: false,
+            name: null,
+            secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
+        }))
     };
+    await setDoc(DOC_REF, initialState);
+    console.log("6 boxes initialized in database.");
+    
+    // Listen for real-time updates after forced initialization
+    onSnapshot(DOC_REF, (doc) => {
+        if (doc.exists()) {
+            state = doc.data();
+            updateUI();
+        }
+    });
+};
     
     const saveState = async () => {
         await setDoc(DOC_REF, state);
@@ -298,4 +291,21 @@ document.getElementById('close-reveal-btn').onclick = () => {
     document.getElementById('username').value = '';
 };
 
-initSync();
+// Entry point
+const startApp = async () => {
+    const docSnap = await getDoc(DOC_REF);
+    if (!docSnap.exists() || !docSnap.data().boxes || docSnap.data().boxes.length !== 6) {
+        console.log("Database empty or invalid. Initializing 6 boxes...");
+        await initSync();
+    } else {
+        console.log("Connecting to existing database state.");
+        onSnapshot(DOC_REF, (doc) => {
+            if (doc.exists()) {
+                state = doc.data();
+                updateUI();
+            }
+        });
+    }
+};
+
+startApp();
