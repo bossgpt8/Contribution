@@ -68,12 +68,13 @@ header p {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 1rem;
+    font-weight: 500;
     color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    padding: 15px;
 }
 
 .box:hover {

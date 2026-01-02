@@ -42,17 +42,8 @@ const updateUI = () => {
                 saveState();
             };
             div.appendChild(input);
-            
-            const removeBtn = document.createElement('div');
-            removeBtn.className = 'box-actions';
-            removeBtn.innerHTML = `<button class="remove-box-btn" onclick="removeBox(${i}, event)">×</button>`;
-            div.appendChild(removeBtn);
-            
-            div.addEventListener('dragstart', handleDragStart);
-            div.addEventListener('dragover', handleDragOver);
-            div.addEventListener('drop', handleDrop);
-            div.addEventListener('dragend', handleDragEnd);
         } else {
+            div.textContent = box.claimed ? '✓' : 'Click to Reveal';
             div.onclick = () => handleBoxClick(i);
         }
         
