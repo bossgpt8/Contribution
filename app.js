@@ -30,9 +30,9 @@ const updateUI = () => {
         div.className = `box ${box.claimed ? 'claimed' : ''} ${isEditMode ? 'edit-mode' : ''}`;
         div.id = `box-${i}`;
         div.draggable = isEditMode;
-        div.textContent = box.claimed ? '✓' : '?';
         
         if (isEditMode) {
+            div.textContent = box.secret;
             const removeBtn = document.createElement('div');
             removeBtn.className = 'box-actions';
             removeBtn.innerHTML = `<button class="remove-box-btn" onclick="removeBox(${i}, event)">×</button>`;
