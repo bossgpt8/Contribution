@@ -80,7 +80,7 @@ document.getElementById('copy-btn').onclick = () => {
 
 document.getElementById('reset-btn').onclick = () => {
     const password = prompt('Enter admin password to reset all boxes:');
-    if (password === 'admin123') { // Simple password protection
+    if (password === 'Jume4real') { // Simple password protection
         if (confirm('Are you sure you want to reset all boxes? This will clear all claims.')) {
             localStorage.removeItem(STORAGE_KEY);
             location.reload();
