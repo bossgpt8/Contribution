@@ -36,10 +36,12 @@ header {
 }
 
 header h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     color: var(--primary);
     margin-bottom: 10px;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.05em;
+    font-weight: 800;
+    text-transform: uppercase;
 }
 
 header p {
