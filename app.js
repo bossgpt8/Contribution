@@ -104,10 +104,14 @@ let draggedIndex = null;
 function handleDragStart(e) {
     draggedIndex = parseInt(this.id.split('-')[1]);
     this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    // Required for Firefox
+    e.dataTransfer.setData('text/plain', draggedIndex);
 }
 
 function handleDragOver(e) {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
 }
 
 function handleDrop(e) {

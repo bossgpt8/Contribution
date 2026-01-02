@@ -114,7 +114,7 @@ header p {
 
 .box.edit-mode {
     border: 2px dashed var(--primary);
-    cursor: move;
+    cursor: grab;
 }
 
 .box-actions {
@@ -143,6 +143,7 @@ header p {
 
 .box.dragging {
     opacity: 0.5;
+    cursor: grabbing;
 }
 
 .modal {
