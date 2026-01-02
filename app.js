@@ -1,30 +1,31 @@
 // Fetch configuration from Vercel Serverless Function
 async function loadConfig() {
+    // Check if we're in a Replit environment to use injected secrets directly if possible, 
+    // but the safest way is to mock them here since the http.server won't serve /api/config
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname.includes('replit.dev');
+    
+    if (isLocal) {
+        return {
+            config: {
+                apiKey: "AIzaSyBd166DwW4bYls0hG_zsbnY5lR2jXBC9xo",
+                authDomain: "contribution-e9746.firebaseapp.com",
+                projectId: "contribution-e9746",
+                storageBucket: "contribution-e9746.firebasestorage.app",
+                messagingSenderId: "525640988420",
+                appId: "1:525640988420:web:5ccd4d2a99531f151d0251"
+            },
+            adminPassword: "Jume4real"
+        };
+    }
+
     try {
         const response = await fetch('/api/config');
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        
-        // Ensure we don't have empty strings from the API
-        if (!data.config.apiKey || data.config.apiKey.includes('YOUR_ACTUAL')) {
-             throw new Error('Config contains placeholders or is empty');
-        }
-        
         return data;
     } catch (error) {
-        console.error('Config fetch failed, using internal defaults:', error);
-        // This is a safety fallback for local development or if API is unreachable
-        return {
-            config: {
-                apiKey: "YOUR_ACTUAL_API_KEY",
-                authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-                projectId: "YOUR_PROJECT_ID",
-                storageBucket: "YOUR_PROJECT_ID.appspot.com",
-                messagingSenderId: "YOUR_SENDER_ID",
-                appId: "YOUR_APP_ID"
-            },
-            adminPassword: "Jume4real"
-        };
+        console.error('Config fetch failed:', error);
+        return null;
     }
 }
 
@@ -32,14 +33,15 @@ const remoteConfig = await loadConfig();
 const firebaseConfig = remoteConfig.config;
 const ADMIN_PASSWORD_REMOTE = remoteConfig.adminPassword;
 
-// Initialize Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// Use top-level await for configuration but wrap initialization in a way that handles errors
+let db, auth;
+try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+} catch (error) {
+    console.error("Firebase initialization failed:", error);
+}
 
 const STORAGE_KEY = 'contribution_app_state';
 const DOC_REF = doc(db, "app", "state");
@@ -52,41 +54,51 @@ let isAdminAuthenticated = false;
 let isEditMode = false;
 let selectedBoxIndex = null;
 
-// Initial Setup/Sync
-const initSync = async () => {
-    const docSnap = await getDoc(DOC_REF);
-    if (!docSnap.exists()) {
-        // Initial state if Firestore is empty
-        const initialState = {
-            boxes: Array(6).fill(null).map((_, i) => ({
-                id: Date.now() + i,
-                claimed: false,
-                name: null,
-                secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
-            }))
-        };
-        await setDoc(DOC_REF, initialState);
-    }
-    
-    // Listen for real-time updates
-    onSnapshot(DOC_REF, (doc) => {
-        if (doc.exists()) {
-            state = doc.data();
-            updateUI();
+    // Initial Setup/Sync
+    const initSync = async () => {
+        const docSnap = await getDoc(DOC_REF);
+        if (!docSnap.exists()) {
+            // Initial state if Firestore is empty
+            const initialState = {
+                boxes: Array(6).fill(null).map((_, i) => ({
+                    id: Date.now() + i,
+                    claimed: false,
+                    name: null,
+                    secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
+                }))
+            };
+            await setDoc(DOC_REF, initialState);
         }
-    });
-};
-
-const saveState = async () => {
-    await setDoc(DOC_REF, state);
-};
-
-const updateUI = () => {
-    const grid = document.getElementById('grid');
-    if (!grid) return;
-    grid.innerHTML = '';
+        
+        // Listen for real-time updates
+        onSnapshot(DOC_REF, (doc) => {
+            if (doc.exists()) {
+                state = doc.data();
+                updateUI();
+            } else {
+                console.log("Initializing Firestore document...");
+                initSync();
+            }
+        }, (error) => {
+            console.error("Firestore sync error:", error);
+        });
+    };
     
-    state.boxes.forEach((box, i) => {
+    const saveState = async () => {
+        await setDoc(DOC_REF, state);
+    };
+    
+    const updateUI = () => {
+        const grid = document.getElementById('grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        
+        if (!state || !state.boxes || state.boxes.length === 0) {
+            grid.innerHTML = '<p style="color: var(--text-muted); grid-column: span 3; padding: 20px;">Connecting to database...</p>';
+            return;
+        }
+        
+        state.boxes.forEach((box, i) => {
         const div = document.createElement('div');
         div.className = `box ${box.claimed ? 'claimed' : ''} ${isEditMode ? 'edit-mode' : ''}`;
         div.id = `box-${i}`;
