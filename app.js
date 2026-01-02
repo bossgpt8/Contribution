@@ -1,28 +1,64 @@
-// Mock Firebase configuration for demonstration
-// The agent will use local storage to simulate persistence for this Fast-mode session
-// unless the user adds the Firebase integration secrets later.
+// REPLACE THIS WITH YOUR FIREBASE CONFIGURATION
+// You can get this from your Firebase Console
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const STORAGE_KEY = 'contribution_app_state';
+const DOC_REF = doc(db, "app", "state");
 
-// Initialize or load state
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-    boxes: Array(6).fill(null).map((_, i) => ({
-        id: i,
-        claimed: false,
-        name: null,
-        secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
-    }))
+let state = {
+    boxes: []
 };
 
 let isAdminAuthenticated = false;
 let isEditMode = false;
-
-const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-
 let selectedBoxIndex = null;
+
+// Initial Setup/Sync
+const initSync = async () => {
+    const docSnap = await getDoc(DOC_REF);
+    if (!docSnap.exists()) {
+        // Initial state if Firestore is empty
+        const initialState = {
+            boxes: Array(6).fill(null).map((_, i) => ({
+                id: Date.now() + i,
+                claimed: false,
+                name: null,
+                secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
+            }))
+        };
+        await setDoc(DOC_REF, initialState);
+    }
+    
+    // Listen for real-time updates
+    onSnapshot(DOC_REF, (doc) => {
+        if (doc.exists()) {
+            state = doc.data();
+            updateUI();
+        }
+    });
+};
+
+const saveState = async () => {
+    await setDoc(DOC_REF, state);
+};
 
 const updateUI = () => {
     const grid = document.getElementById('grid');
+    if (!grid) return;
     grid.innerHTML = '';
     
     state.boxes.forEach((box, i) => {
@@ -66,18 +102,17 @@ window.toggleAdminMode = () => {
     updateUI();
 };
 
-window.shuffleBoxes = () => {
+window.shuffleBoxes = async () => {
     if (!isAdminAuthenticated) return alert('Auth required');
     const secrets = state.boxes.map(b => b.secret).sort(() => Math.random() - 0.5);
     state.boxes.forEach((box, i) => {
         box.secret = secrets[i];
     });
-    saveState();
-    updateUI();
+    await saveState();
     alert('Numbers shuffled!');
 };
 
-window.addBox = () => {
+window.addBox = async () => {
     if (!isAdminAuthenticated) return alert('Auth required');
     const nextNum = state.boxes.length + 1;
     state.boxes.push({
@@ -86,16 +121,14 @@ window.addBox = () => {
         name: null,
         secret: nextNum
     });
-    saveState();
-    updateUI();
+    await saveState();
 };
 
-window.removeBox = (index, event) => {
+window.removeBox = async (index, event) => {
     event.stopPropagation();
     if (!isAdminAuthenticated) return alert('Auth required');
     state.boxes.splice(index, 1);
-    saveState();
-    updateUI();
+    await saveState();
 };
 
 // Drag and Drop Logic
@@ -105,7 +138,6 @@ function handleDragStart(e) {
     draggedIndex = parseInt(this.id.split('-')[1]);
     this.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
-    // Required for Firefox
     e.dataTransfer.setData('text/plain', draggedIndex);
 }
 
@@ -114,14 +146,13 @@ function handleDragOver(e) {
     e.dataTransfer.dropEffect = 'move';
 }
 
-function handleDrop(e) {
+async function handleDrop(e) {
     e.preventDefault();
     const targetIndex = parseInt(this.id.split('-')[1]);
     if (draggedIndex !== targetIndex) {
         const item = state.boxes.splice(draggedIndex, 1)[0];
         state.boxes.splice(targetIndex, 0, item);
-        saveState();
-        updateUI();
+        await saveState();
     }
 }
 
@@ -139,22 +170,19 @@ document.getElementById('cancel-btn').onclick = () => {
     document.getElementById('modal').classList.remove('active');
 };
 
-document.getElementById('confirm-btn').onclick = () => {
+document.getElementById('confirm-btn').onclick = async () => {
     const name = document.getElementById('username').value.trim();
     if (!name) return alert('Please enter your name');
 
     const box = state.boxes[selectedBoxIndex];
     box.claimed = true;
     box.name = name;
-    saveState();
+    await saveState();
 
     document.getElementById('modal').classList.remove('active');
     
-    // Show reveal
     document.getElementById('result-number').textContent = box.secret;
     document.getElementById('reveal-modal').classList.add('active');
-    
-    updateUI();
 };
 
 document.getElementById('share-wa-btn').onclick = () => {
@@ -175,12 +203,15 @@ document.getElementById('copy-btn').onclick = () => {
     });
 };
 
-document.getElementById('reset-btn').onclick = () => {
+document.getElementById('reset-btn').onclick = async () => {
     const password = prompt('Enter admin password to reset all boxes:');
-    if (password === 'Jume4real') { // Simple password protection
-        if (confirm('Are you sure you want to reset all boxes? This will clear all claims.')) {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
+    if (password === 'Jume4real') {
+        if (confirm('Are you sure you want to reset all boxes?')) {
+             state.boxes.forEach(b => {
+                b.claimed = false;
+                b.name = null;
+             });
+             await saveState();
         }
     } else if (password !== null) {
         alert('Incorrect password.');
@@ -192,5 +223,4 @@ document.getElementById('close-reveal-btn').onclick = () => {
     document.getElementById('username').value = '';
 };
 
-// Initial Render
-updateUI();
+initSync();
