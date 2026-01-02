@@ -1,3 +1,8 @@
+// Initialize Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 // Fetch configuration from Vercel Serverless Function
 async function loadConfig() {
     // Check if we're in a Replit environment to use injected secrets directly if possible, 
