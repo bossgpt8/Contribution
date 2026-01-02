@@ -32,7 +32,17 @@ const updateUI = () => {
         div.draggable = isEditMode;
         
         if (isEditMode) {
-            div.textContent = box.secret;
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'edit-number-input';
+            input.value = box.secret;
+            input.onclick = (e) => e.stopPropagation();
+            input.onchange = (e) => {
+                box.secret = parseInt(e.target.value) || 0;
+                saveState();
+            };
+            div.appendChild(input);
+            
             const removeBtn = document.createElement('div');
             removeBtn.className = 'box-actions';
             removeBtn.innerHTML = `<button class="remove-box-btn" onclick="removeBox(${i}, event)">×</button>`;
