@@ -1,19 +1,25 @@
-// REPLACE THIS WITH YOUR FIREBASE CONFIGURATION
-// You can get this from your Firebase Console
+// Firebase Configuration using environment variables (Vercel injected)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "<!-- FIREBASE_API_KEY -->",
+  authDomain: "<!-- FIREBASE_AUTH_DOMAIN -->",
+  projectId: "<!-- FIREBASE_PROJECT_ID -->",
+  storageBucket: "<!-- FIREBASE_STORAGE_BUCKET -->",
+  messagingSenderId: "<!-- FIREBASE_MESSAGING_SENDER_ID -->",
+  appId: "<!-- FIREBASE_APP_ID -->"
 };
+
+// Note: In client-side JS on Vercel, you would typically use a build-time replacement 
+// or define these in index.html as global variables.
+// Since this is a static site, we will read from global window.ENV if provided, 
+// or fallback to the placeholders which the user can manually fill or we can automate.
+
+const ENV = window.FIREBASE_CONFIG || firebaseConfig;
 
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(ENV);
 const db = getFirestore(app);
 
 const STORAGE_KEY = 'contribution_app_state';
@@ -89,7 +95,8 @@ const updateUI = () => {
 window.toggleAdminMode = () => {
     if (!isAdminAuthenticated) {
         const pass = prompt('Enter admin password:');
-        if (pass === 'Jume4real') {
+        const correctPass = window.ADMIN_PASSWORD || 'Jume4real';
+        if (pass === correctPass) {
             isAdminAuthenticated = true;
         } else {
             return alert('Incorrect password');
@@ -205,7 +212,8 @@ document.getElementById('copy-btn').onclick = () => {
 
 document.getElementById('reset-btn').onclick = async () => {
     const password = prompt('Enter admin password to reset all boxes:');
-    if (password === 'Jume4real') {
+    const correctPass = window.ADMIN_PASSWORD || 'Jume4real';
+    if (password === correctPass) {
         if (confirm('Are you sure you want to reset all boxes?')) {
              state.boxes.forEach(b => {
                 b.claimed = false;
