@@ -1,52 +1,30 @@
-// Initialize Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-// Fetch configuration from Vercel Serverless Function
+// Fetch configuration (Mocking for frontend-only architecture)
 async function loadConfig() {
-    // Check if we're in a Replit environment to use injected secrets directly if possible, 
-    // but the safest way is to mock them here since the http.server won't serve /api/config
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname.includes('replit.dev');
-    
-    if (isLocal) {
-        return {
-            config: {
-                apiKey: "AIzaSyBd166DwW4bYls0hG_zsbnY5lR2jXBC9xo",
-                authDomain: "contribution-e9746.firebaseapp.com",
-                projectId: "contribution-e9746",
-                storageBucket: "contribution-e9746.firebasestorage.app",
-                messagingSenderId: "525640988420",
-                appId: "1:525640988420:web:5ccd4d2a99531f151d0251"
-            },
-            adminPassword: "Jume4real"
-        };
-    }
-
-    try {
-        const response = await fetch('/api/config');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Config fetch failed:', error);
-        return null;
-    }
+    return {
+        config: {
+            apiKey: "AIzaSyBd166DwW4bYls0hG_zsbnY5lR2jXBC9xo",
+            authDomain: "contribution-e9746.firebaseapp.com",
+            projectId: "contribution-e9746",
+            storageBucket: "contribution-e9746.firebasestorage.app",
+            messagingSenderId: "525640988420",
+            appId: "1:525640988420:web:5ccd4d2a99531f151d0251"
+        },
+        adminPassword: "Jume4real"
+    };
 }
 
 const remoteConfig = await loadConfig();
 const firebaseConfig = remoteConfig.config;
 const ADMIN_PASSWORD_REMOTE = remoteConfig.adminPassword;
 
-// Use top-level await for configuration but wrap initialization in a way that handles errors
-let db, auth;
-try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
-} catch (error) {
-    console.error("Firebase initialization failed:", error);
-}
+// Initialize Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 const STORAGE_KEY = 'contribution_app_state';
 const DOC_REF = doc(db, "app", "state");
@@ -226,11 +204,19 @@ function handleDragEnd() {
 window.handleBoxClick = (index) => {
     // Ensure state and boxes are loaded
     if (!state || !state.boxes || !state.boxes[index]) {
+        console.warn("Box click ignored: State not ready");
         return;
     }
     
     // Check if this device has already picked a box
-    if (localStorage.getItem('has_picked_contribution')) {
+    let hasPicked = false;
+    try {
+        hasPicked = localStorage.getItem('has_picked_contribution');
+    } catch (e) {
+        console.warn("LocalStorage access denied, skipping device check.");
+    }
+
+    if (hasPicked) {
         return alert('You have already picked a contribution number!');
     }
     
@@ -253,7 +239,11 @@ document.getElementById('confirm-btn').onclick = async () => {
     await saveState();
 
     // Mark this device as having picked
-    localStorage.setItem('has_picked_contribution', 'true');
+    try {
+        localStorage.setItem('has_picked_contribution', 'true');
+    } catch (e) {
+        console.warn("LocalStorage access denied.");
+    }
 
     document.getElementById('modal').classList.remove('active');
     
@@ -291,7 +281,11 @@ document.getElementById('reset-btn').onclick = async () => {
             });
             await saveState();
             // Also clear the "has picked" flag for all devices (local)
-            localStorage.removeItem('has_picked_contribution');
+            try {
+                localStorage.removeItem('has_picked_contribution');
+            } catch (e) {
+                console.warn("LocalStorage access denied.");
+            }
             location.reload();
         }
     } else if (password !== null) {
