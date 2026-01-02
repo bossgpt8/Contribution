@@ -168,6 +168,11 @@ function handleDragEnd() {
 }
 
 window.handleBoxClick = (index) => {
+    // Ensure state and boxes are loaded
+    if (!state || !state.boxes || !state.boxes[index]) {
+        return;
+    }
+    
     // Check if this device has already picked a box
     if (localStorage.getItem('has_picked_contribution')) {
         return alert('You have already picked a contribution number!');
