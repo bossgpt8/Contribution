@@ -168,6 +168,11 @@ function handleDragEnd() {
 }
 
 window.handleBoxClick = (index) => {
+    // Check if this device has already picked a box
+    if (localStorage.getItem('has_picked_contribution')) {
+        return alert('You have already picked a contribution number!');
+    }
+    
     if (state.boxes[index].claimed) return;
     selectedBoxIndex = index;
     document.getElementById('modal').classList.add('active');
@@ -185,6 +190,9 @@ document.getElementById('confirm-btn').onclick = async () => {
     box.claimed = true;
     box.name = name;
     await saveState();
+
+    // Mark this device as having picked
+    localStorage.setItem('has_picked_contribution', 'true');
 
     document.getElementById('modal').classList.remove('active');
     
@@ -220,6 +228,9 @@ document.getElementById('reset-btn').onclick = async () => {
                 b.name = null;
              });
              await saveState();
+             // Also clear the "has picked" flag for all devices (local)
+             localStorage.removeItem('has_picked_contribution');
+             location.reload();
         }
     } else if (password !== null) {
         alert('Incorrect password.');
