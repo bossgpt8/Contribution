@@ -1,26 +1,36 @@
-// Firebase Configuration using environment variables (Vercel injected)
-const firebaseConfig = {
-  apiKey: "YOUR_ACTUAL_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+// Fetch configuration from Vercel Serverless Function
+async function loadConfig() {
+    try {
+        const response = await fetch('/api/config');
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Failed to load config:', error);
+        // Fallback to manual config if needed
+        return {
+            config: {
+                apiKey: "YOUR_ACTUAL_API_KEY",
+                authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_PROJECT_ID.appspot.com",
+                messagingSenderId: "YOUR_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            },
+            adminPassword: "Jume4real"
+        };
+    }
+}
 
-// Note: In client-side JS on Vercel, you would typically use a build-time replacement 
-// or define these in index.html as global variables.
-// Since this is a static site, we will read from global window.ENV if provided, 
-// or fallback to the placeholders which the user can manually fill or we can automate.
-
-const ENV = window.FIREBASE_CONFIG || firebaseConfig;
+const remoteConfig = await loadConfig();
+const firebaseConfig = remoteConfig.config;
+const ADMIN_PASSWORD_REMOTE = remoteConfig.adminPassword;
 
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const app = initializeApp(ENV);
+const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
@@ -110,6 +120,13 @@ window.toggleAdminMode = async () => {
     if (!isAdminAuthenticated) {
         const email = prompt('Enter admin email:');
         const pass = prompt('Enter admin password:');
+        const correctPass = ADMIN_PASSWORD_REMOTE || 'Jume4real';
+        
+        // Validate password locally first if you prefer, or rely on Firebase Auth
+        if (pass !== correctPass) {
+            return alert('Incorrect admin password');
+        }
+
         try {
             await signInWithEmailAndPassword(auth, email, pass);
         } catch (error) {
@@ -240,7 +257,10 @@ document.getElementById('copy-btn').onclick = () => {
 
 document.getElementById('reset-btn').onclick = async () => {
     if (!isAdminAuthenticated) return alert('Auth required');
-    if (confirm('Are you sure you want to reset all boxes?')) {
+    const password = prompt('Enter admin password to reset all boxes:');
+    const correctPass = ADMIN_PASSWORD_REMOTE || 'Jume4real';
+    if (password === correctPass) {
+        if (confirm('Are you sure you want to reset all boxes?')) {
          state.boxes.forEach(b => {
             b.claimed = false;
             b.name = null;
