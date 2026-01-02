@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contribution Picker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Contribution Picker</h1>
+            <p>Select a box to reveal your contribution number. Professional & Secure.</p>
+        </header>
+
+        <div id="grid" class="grid">
+            <!-- 6 Boxes will be generated here -->
+            <div class="box" id="box-0" onclick="handleBoxClick(0)">?</div>
+            <div class="box" id="box-1" onclick="handleBoxClick(1)">?</div>
+            <div class="box" id="box-2" onclick="handleBoxClick(2)">?</div>
+            <div class="box" id="box-3" onclick="handleBoxClick(3)">?</div>
+            <div class="box" id="box-4" onclick="handleBoxClick(4)">?</div>
+            <div class="box" id="box-5" onclick="handleBoxClick(5)">?</div>
+        </div>
+
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <h3>Claim this box?</h3>
+                <p>Enter your name to reveal the hidden number.</p>
+                <input type="text" id="username" placeholder="Your Name">
+                <div class="modal-actions">
+                    <button id="cancel-btn">Cancel</button>
+                    <button id="confirm-btn">Reveal & Claim</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="reveal-modal" class="modal">
+            <div class="modal-content">
+                <h2 id="result-number">0</h2>
+                <p>Is your contribution number!</p>
+                <button id="share-wa-btn">Share to WhatsApp</button>
+                <button id="close-reveal-btn">Close</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Contribution System. Secure & Anonymous.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
