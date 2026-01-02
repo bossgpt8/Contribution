@@ -268,14 +268,17 @@ document.getElementById('reset-btn').onclick = async () => {
     const correctPass = ADMIN_PASSWORD_REMOTE || 'Jume4real';
     if (password === correctPass) {
         if (confirm('Are you sure you want to reset all boxes?')) {
-         state.boxes.forEach(b => {
-            b.claimed = false;
-            b.name = null;
-         });
-         await saveState();
-         // Also clear the "has picked" flag for all devices (local)
-         localStorage.removeItem('has_picked_contribution');
-         location.reload();
+            state.boxes.forEach(b => {
+                b.claimed = false;
+                b.name = null;
+            });
+            await saveState();
+            // Also clear the "has picked" flag for all devices (local)
+            localStorage.removeItem('has_picked_contribution');
+            location.reload();
+        }
+    } else if (password !== null) {
+        alert('Incorrect password.');
     }
 };
 
