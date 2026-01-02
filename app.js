@@ -2,11 +2,12 @@
 async function loadConfig() {
     try {
         const response = await fetch('/api/config');
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         return data;
     } catch (error) {
         console.error('Failed to load config:', error);
-        // Fallback to manual config if needed
+        // Fallback directly to the config if API fails or isn't deployed yet
         return {
             config: {
                 apiKey: "YOUR_ACTUAL_API_KEY",
