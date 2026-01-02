@@ -11,10 +11,8 @@ service cloud.firestore {
       // Allow reading for everyone
       allow read: if true;
       
-      // Allow updates if they are only claiming a box (not changing secrets)
-      // or if you want to leave it open for now while testing.
-      // FOR FULL SECURITY: Only allow updates if the user is an admin.
-      allow write: if true; 
+      // ONLY allow updates if the user is authenticated (Admin)
+      allow write: if request.auth != null; 
     }
   }
 }

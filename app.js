@@ -18,9 +18,11 @@ const ENV = window.FIREBASE_CONFIG || firebaseConfig;
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const app = initializeApp(ENV);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 const STORAGE_KEY = 'contribution_app_state';
 const DOC_REF = doc(db, "app", "state");
@@ -92,19 +94,32 @@ const updateUI = () => {
     });
 };
 
-window.toggleAdminMode = () => {
+// Listen for Auth changes
+onAuthStateChanged(auth, (user) => {
+    isAdminAuthenticated = !!user;
+    if (isAdminAuthenticated) {
+        document.getElementById('admin-mode-btn').textContent = isEditMode ? 'Save & Exit Edit Mode' : 'Enter Admin Panel';
+    } else {
+        isEditMode = false;
+        document.getElementById('admin-mode-btn').textContent = 'Admin Login';
+        updateUI();
+    }
+});
+
+window.toggleAdminMode = async () => {
     if (!isAdminAuthenticated) {
+        const email = prompt('Enter admin email:');
         const pass = prompt('Enter admin password:');
-        const correctPass = window.ADMIN_PASSWORD || 'Jume4real';
-        if (pass === correctPass) {
-            isAdminAuthenticated = true;
-        } else {
-            return alert('Incorrect password');
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (error) {
+            alert('Login failed: ' + error.message);
         }
+        return;
     }
     
     isEditMode = !isEditMode;
-    document.getElementById('admin-mode-btn').textContent = isEditMode ? 'Save & Exit Edit Mode' : 'Enter Edit Mode';
+    document.getElementById('admin-mode-btn').textContent = isEditMode ? 'Save & Exit Edit Mode' : 'Enter Admin Panel';
     document.getElementById('admin-status').textContent = isEditMode ? 'Edit Mode Active: Drag boxes to reorder or use buttons below.' : '';
     updateUI();
 };
@@ -224,21 +239,16 @@ document.getElementById('copy-btn').onclick = () => {
 };
 
 document.getElementById('reset-btn').onclick = async () => {
-    const password = prompt('Enter admin password to reset all boxes:');
-    const correctPass = window.ADMIN_PASSWORD || 'Jume4real';
-    if (password === correctPass) {
-        if (confirm('Are you sure you want to reset all boxes?')) {
-             state.boxes.forEach(b => {
-                b.claimed = false;
-                b.name = null;
-             });
-             await saveState();
-             // Also clear the "has picked" flag for all devices (local)
-             localStorage.removeItem('has_picked_contribution');
-             location.reload();
-        }
-    } else if (password !== null) {
-        alert('Incorrect password.');
+    if (!isAdminAuthenticated) return alert('Auth required');
+    if (confirm('Are you sure you want to reset all boxes?')) {
+         state.boxes.forEach(b => {
+            b.claimed = false;
+            b.name = null;
+         });
+         await saveState();
+         // Also clear the "has picked" flag for all devices (local)
+         localStorage.removeItem('has_picked_contribution');
+         location.reload();
     }
 };
 
