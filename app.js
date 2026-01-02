@@ -10,27 +10,120 @@ let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
         id: i,
         claimed: false,
         name: null,
-        // The "scattered" secret numbers
         secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
     }))
 };
+
+let isAdminAuthenticated = false;
+let isEditMode = false;
 
 const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
 let selectedBoxIndex = null;
 
 const updateUI = () => {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    
     state.boxes.forEach((box, i) => {
-        const element = document.getElementById(`box-${i}`);
-        if (box.claimed) {
-            element.classList.add('claimed');
-            element.textContent = '✓'; // Number is hidden until user clicks their OWN claim
+        const div = document.createElement('div');
+        div.className = `box ${box.claimed ? 'claimed' : ''} ${isEditMode ? 'edit-mode' : ''}`;
+        div.id = `box-${i}`;
+        div.draggable = isEditMode;
+        div.textContent = box.claimed ? '✓' : '?';
+        
+        if (isEditMode) {
+            const removeBtn = document.createElement('div');
+            removeBtn.className = 'box-actions';
+            removeBtn.innerHTML = `<button class="remove-box-btn" onclick="removeBox(${i}, event)">×</button>`;
+            div.appendChild(removeBtn);
+            
+            div.addEventListener('dragstart', handleDragStart);
+            div.addEventListener('dragover', handleDragOver);
+            div.addEventListener('drop', handleDrop);
+            div.addEventListener('dragend', handleDragEnd);
         } else {
-            element.classList.remove('claimed');
-            element.textContent = '?';
+            div.onclick = () => handleBoxClick(i);
         }
+        
+        grid.appendChild(div);
     });
 };
+
+window.toggleAdminMode = () => {
+    if (!isAdminAuthenticated) {
+        const pass = prompt('Enter admin password:');
+        if (pass === 'Jume4real') {
+            isAdminAuthenticated = true;
+        } else {
+            return alert('Incorrect password');
+        }
+    }
+    
+    isEditMode = !isEditMode;
+    document.getElementById('admin-mode-btn').textContent = isEditMode ? 'Save & Exit Edit Mode' : 'Enter Edit Mode';
+    document.getElementById('admin-status').textContent = isEditMode ? 'Edit Mode Active: Drag boxes to reorder or use buttons below.' : '';
+    updateUI();
+};
+
+window.shuffleBoxes = () => {
+    if (!isAdminAuthenticated) return alert('Auth required');
+    const secrets = state.boxes.map(b => b.secret).sort(() => Math.random() - 0.5);
+    state.boxes.forEach((box, i) => {
+        box.secret = secrets[i];
+    });
+    saveState();
+    updateUI();
+    alert('Numbers shuffled!');
+};
+
+window.addBox = () => {
+    if (!isAdminAuthenticated) return alert('Auth required');
+    const nextNum = state.boxes.length + 1;
+    state.boxes.push({
+        id: Date.now(),
+        claimed: false,
+        name: null,
+        secret: nextNum
+    });
+    saveState();
+    updateUI();
+};
+
+window.removeBox = (index, event) => {
+    event.stopPropagation();
+    if (!isAdminAuthenticated) return alert('Auth required');
+    state.boxes.splice(index, 1);
+    saveState();
+    updateUI();
+};
+
+// Drag and Drop Logic
+let draggedIndex = null;
+
+function handleDragStart(e) {
+    draggedIndex = parseInt(this.id.split('-')[1]);
+    this.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const targetIndex = parseInt(this.id.split('-')[1]);
+    if (draggedIndex !== targetIndex) {
+        const item = state.boxes.splice(draggedIndex, 1)[0];
+        state.boxes.splice(targetIndex, 0, item);
+        saveState();
+        updateUI();
+    }
+}
+
+function handleDragEnd() {
+    this.classList.remove('dragging');
+}
 
 window.handleBoxClick = (index) => {
     if (state.boxes[index].claimed) return;

@@ -90,13 +90,59 @@ header p {
     pointer-events: none;
 }
 
-.box.claimed::after {
-    content: "Claimed";
+.admin-panel {
+    margin-top: 40px;
+    padding: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.admin-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.admin-panel button {
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    flex: none;
+}
+
+.box.edit-mode {
+    border: 2px dashed var(--primary);
+    cursor: move;
+}
+
+.box-actions {
     position: absolute;
-    font-size: 0.7rem;
-    bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    top: 5px;
+    right: 5px;
+    display: none;
+}
+
+.edit-mode .box-actions {
+    display: block;
+}
+
+.remove-box-btn {
+    background: #ef4444;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    padding: 0;
+}
+
+.box.dragging {
+    opacity: 0.5;
 }
 
 .modal {
