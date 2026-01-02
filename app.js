@@ -78,13 +78,19 @@ window.toggleAdminMode = () => {
 
 window.shuffleBoxes = () => {
     if (!isAdminAuthenticated) return alert('Auth required');
-    const secrets = state.boxes.map(b => b.secret).sort(() => Math.random() - 0.5);
+    
+    // Create a unique list of numbers from 1 to the current number of boxes
+    const count = state.boxes.length;
+    const uniqueNumbers = Array.from({length: count}, (_, i) => i + 1)
+        .sort(() => Math.random() - 0.5);
+    
     state.boxes.forEach((box, i) => {
-        box.secret = secrets[i];
+        box.secret = uniqueNumbers[i];
     });
+    
     saveState();
     updateUI();
-    alert('Numbers shuffled!');
+    alert('Numbers shuffled and duplicates removed!');
 };
 
 window.addBox = () => {
