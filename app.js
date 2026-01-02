@@ -4,10 +4,16 @@ async function loadConfig() {
         const response = await fetch('/api/config');
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
+        
+        // Ensure we don't have empty strings from the API
+        if (!data.config.apiKey || data.config.apiKey.includes('YOUR_ACTUAL')) {
+             throw new Error('Config contains placeholders or is empty');
+        }
+        
         return data;
     } catch (error) {
-        console.error('Failed to load config:', error);
-        // Fallback directly to the config if API fails or isn't deployed yet
+        console.error('Config fetch failed, using internal defaults:', error);
+        // This is a safety fallback for local development or if API is unreachable
         return {
             config: {
                 apiKey: "YOUR_ACTUAL_API_KEY",
