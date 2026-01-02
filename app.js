@@ -1,11 +1,11 @@
 // Firebase Configuration using environment variables (Vercel injected)
 const firebaseConfig = {
-  apiKey: "<!-- FIREBASE_API_KEY -->",
-  authDomain: "<!-- FIREBASE_AUTH_DOMAIN -->",
-  projectId: "<!-- FIREBASE_PROJECT_ID -->",
-  storageBucket: "<!-- FIREBASE_STORAGE_BUCKET -->",
-  messagingSenderId: "<!-- FIREBASE_MESSAGING_SENDER_ID -->",
-  appId: "<!-- FIREBASE_APP_ID -->"
+  apiKey: "YOUR_ACTUAL_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 // Note: In client-side JS on Vercel, you would typically use a build-time replacement 
