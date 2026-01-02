@@ -182,13 +182,37 @@ button {
     margin-top: 15px;
 }
 
-#result-number {
-    font-size: 4rem;
-    color: var(--primary);
-    margin-bottom: 10px;
+.modal-actions-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
 }
 
-footer {
+#copy-btn {
+    background: #334155;
+    color: white;
+}
+
+#admin-reset-container {
+    margin-top: 40px;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+
+#admin-reset-container:hover {
+    opacity: 1;
+}
+
+#reset-btn {
+    background: transparent;
+    border: 1px solid #334155;
     color: #475569;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    padding: 8px 16px;
+}
+
+.box {
+    position: relative;
+    overflow: hidden;
 }

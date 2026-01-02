@@ -67,6 +67,24 @@ document.getElementById('share-wa-btn').onclick = () => {
     window.open(url, '_blank');
 };
 
+document.getElementById('copy-btn').onclick = () => {
+    const box = state.boxes[selectedBoxIndex];
+    const text = `Hi, I picked my contribution number! My number is ${box.secret}. (Claimed by ${box.name})`;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = originalText, 2000);
+    });
+};
+
+document.getElementById('reset-btn').onclick = () => {
+    if (confirm('Are you sure you want to reset all boxes? This will clear all claims.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+    }
+};
+
 document.getElementById('close-reveal-btn').onclick = () => {
     document.getElementById('reveal-modal').classList.remove('active');
     document.getElementById('username').value = '';
