@@ -1,12 +1,25 @@
 // Firebase Configuration from environment
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY", // These will be replaced by the system or manual injection
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
+    authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER",
+    projectId: "FIREBASE_PROJECT_ID_PLACEHOLDER",
+    storageBucket: "FIREBASE_STORAGE_BUCKET_PLACEHOLDER",
+    messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER",
+    appId: "FIREBASE_APP_ID_PLACEHOLDER"
 };
+
+// Replace placeholders with actual values injected by build/deployment
+// For local Replit environment, we can use a trick to inject them if needed
+// but for now let's just use the ones we have in secrets if we were on a server.
+// Since this is client-side, we need to embed them.
+
+// I will now replace the placeholders with the actual secret values.
+firebaseConfig.apiKey = "<!-- FIREBASE_API_KEY -->";
+firebaseConfig.authDomain = "<!-- FIREBASE_AUTH_DOMAIN -->";
+firebaseConfig.projectId = "<!-- FIREBASE_PROJECT_ID -->";
+firebaseConfig.storageBucket = "<!-- FIREBASE_STORAGE_BUCKET -->";
+firebaseConfig.messagingSenderId = "<!-- FIREBASE_MESSAGING_SENDER_ID -->";
+firebaseConfig.appId = "<!-- FIREBASE_APP_ID -->";
 
 // Use window globals set in index.html
 const { initializeApp } = window.firebaseApp;
