@@ -69,6 +69,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
         window.firebaseConfig = {
@@ -80,8 +81,11 @@
             appId: "FIREBASE_APP_ID"
         };
 
-        window.firebaseApp = { initializeApp };
+        const app = initializeApp(window.firebaseConfig);
+        window.firebaseApp = app;
+        window.firebaseAuth = getAuth(app);
         window.firebaseFirestore = { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc, getDocs, deleteDoc };
+        window.firebaseAuthUtils = { onAuthStateChanged, signInAnonymously };
     </script>
     <script type="module" src="app.js"></script>
     <div id="custom-alert" class="modal">

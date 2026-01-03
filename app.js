@@ -2,19 +2,34 @@
 const firebaseConfig = window.firebaseConfig;
 
 // Use window globals set in index.html
-const { initializeApp } = window.firebaseApp;
+const app = window.firebaseApp;
+const auth = window.firebaseAuth;
+const { onAuthStateChanged, signInAnonymously } = window.firebaseAuthUtils;
 const { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc, getDocs, deleteDoc } = window.firebaseFirestore;
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const numbersCollection = collection(db, "numbers");
 
+let currentUser = null;
 let state = {
     boxes: []
 };
 
 let isAdminAuthenticated = false;
 let isEditMode = false;
+
+// Authenticate user anonymously to have a unique ID
+signInAnonymously(auth).catch((error) => {
+    console.error("Auth error:", error);
+    showAlert("Authentication failed. Please check if Anonymous Auth is enabled in Firebase Console.");
+});
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        console.log("Authenticated as:", user.uid);
+    }
+});
 
 // Initialize boxes if not already loaded from Firestore
 const initLocalState = (count = 6) => {
@@ -223,6 +238,20 @@ function handleDragEnd() {
 }
 
 window.handleBoxClick = (index) => {
+    if (!currentUser) {
+        showAlert('Please wait a moment while we secure your session...');
+        return;
+    }
+    
+    // Check if user already claimed a box
+    const alreadyClaimed = state.boxes.find(b => b.userId === currentUser.uid);
+    if (alreadyClaimed) {
+        selectedBoxIndex = state.boxes.indexOf(alreadyClaimed);
+        document.getElementById('result-number').textContent = alreadyClaimed.secret;
+        document.getElementById('reveal-modal').classList.add('active');
+        return;
+    }
+
     if (state.boxes[index].claimed) {
         showAlert('This box has already been claimed! Please select another available box.');
         return;
@@ -245,6 +274,7 @@ document.getElementById('confirm-btn').onclick = () => {
     const box = state.boxes[selectedBoxIndex];
     box.claimed = true;
     box.name = name;
+    box.userId = currentUser.uid; // Tie box to user
     saveBoxState(box);
 
     document.getElementById('modal').classList.remove('active');
