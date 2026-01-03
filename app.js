@@ -14,12 +14,12 @@ const firebaseConfig = {
 // Since this is client-side, we need to embed them.
 
 // I will now replace the placeholders with the actual secret values.
-firebaseConfig.apiKey = "<!-- FIREBASE_API_KEY -->";
-firebaseConfig.authDomain = "<!-- FIREBASE_AUTH_DOMAIN -->";
-firebaseConfig.projectId = "<!-- FIREBASE_PROJECT_ID -->";
-firebaseConfig.storageBucket = "<!-- FIREBASE_STORAGE_BUCKET -->";
-firebaseConfig.messagingSenderId = "<!-- FIREBASE_MESSAGING_SENDER_ID -->";
-firebaseConfig.appId = "<!-- FIREBASE_APP_ID -->";
+firebaseConfig.apiKey = "FIREBASE_API_KEY";
+firebaseConfig.authDomain = "FIREBASE_AUTH_DOMAIN";
+firebaseConfig.projectId = "FIREBASE_PROJECT_ID";
+firebaseConfig.storageBucket = "FIREBASE_STORAGE_BUCKET";
+firebaseConfig.messagingSenderId = "FIREBASE_MESSAGING_SENDER_ID";
+firebaseConfig.appId = "FIREBASE_APP_ID";
 
 // Use window globals set in index.html
 const { initializeApp } = window.firebaseApp;
