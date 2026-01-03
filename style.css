@@ -36,15 +36,20 @@ header {
 }
 
 header h1 {
-    font-size: 2rem;
+    font-size: 2.8rem;
     color: var(--primary);
     margin-bottom: 10px;
-    letter-spacing: -0.025em;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
 header p {
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
 }
 
 .grid {
@@ -63,25 +68,25 @@ header p {
 .box {
     aspect-ratio: 1 / 1;
     background-color: var(--card-bg);
-    border: 2px solid var(--primary); /* Made available boxes stand out more */
-    border-radius: 12px;
+    border: 2px solid #334155;
+    border-radius: 16px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--primary); /* Brighter text for available boxes */
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary);
     cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
     padding: 15px;
-    box-shadow: 0 4px 10px rgba(251, 191, 36, 0.1); /* Subtle glow for available */
 }
 
 .box:hover {
     border-color: var(--primary);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.15);
 }
 
 .box.claimed {
