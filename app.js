@@ -317,7 +317,7 @@ document.getElementById('confirm-btn').onclick = () => {
 document.getElementById('share-wa-btn').onclick = () => {
     const box = state.boxes[selectedBoxIndex];
     const text = `Hi, I picked my contribution number! My number is ${box.secret}. (Claimed by ${box.name})`;
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    const url = `https://wa.me/2348039285527?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
 };
 
