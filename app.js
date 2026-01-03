@@ -147,6 +147,8 @@ document.getElementById('custom-alert-close').onclick = () => {
 window.toggleAdminMode = () => {
     if (!isAdminAuthenticated) {
         const pass = prompt('Enter admin password:');
+        // In a real production app, this should be a backend check.
+        // For now, we use a placeholder that can be injected or matched.
         if (pass === 'Jume4real') {
             isAdminAuthenticated = true;
         } else {
