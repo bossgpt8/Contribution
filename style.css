@@ -195,8 +195,22 @@ header p {
 }
 
 .modal-content p {
-    color: var(--text-muted);
+    color: var(--text-main);
     margin-bottom: 20px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+#custom-alert .modal-content {
+    text-align: center;
+    border-top: 4px solid var(--primary);
+}
+
+#custom-alert-close {
+    background: var(--primary);
+    color: #000;
+    max-width: 120px;
+    margin: 0 auto;
 }
 
 input[type="text"] {

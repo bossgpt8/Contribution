@@ -51,13 +51,25 @@ const updateUI = () => {
     });
 };
 
+const showAlert = (message) => {
+    const alertModal = document.getElementById('custom-alert');
+    const alertMsg = document.getElementById('custom-alert-message');
+    alertMsg.textContent = message;
+    alertModal.classList.add('active');
+};
+
+document.getElementById('custom-alert-close').onclick = () => {
+    document.getElementById('custom-alert').classList.remove('active');
+};
+
 window.toggleAdminMode = () => {
     if (!isAdminAuthenticated) {
         const pass = prompt('Enter admin password:');
         if (pass === 'Jume4real') {
             isAdminAuthenticated = true;
         } else {
-            return alert('Incorrect password');
+            showAlert('Incorrect password. Please try again.');
+            return;
         }
     }
     
@@ -68,7 +80,7 @@ window.toggleAdminMode = () => {
 };
 
 window.shuffleBoxes = () => {
-    if (!isAdminAuthenticated) return alert('Auth required');
+    if (!isAdminAuthenticated) return showAlert('Authentication required.');
     
     // Create a unique list of numbers from 1 to the current number of boxes
     const count = state.boxes.length;
@@ -81,7 +93,7 @@ window.shuffleBoxes = () => {
     
     saveState();
     updateUI();
-    alert('Numbers shuffled and duplicates removed!');
+    showAlert('Numbers shuffled and duplicates removed!');
 };
 
 window.addBox = () => {
@@ -138,7 +150,7 @@ function handleDragEnd() {
 
 window.handleBoxClick = (index) => {
     if (state.boxes[index].claimed) {
-        alert('This box has already been claimed! Please select another available box.');
+        showAlert('This box has already been claimed! Please select another available box.');
         return;
     }
     selectedBoxIndex = index;
@@ -151,7 +163,10 @@ document.getElementById('cancel-btn').onclick = () => {
 
 document.getElementById('confirm-btn').onclick = () => {
     const name = document.getElementById('username').value.trim();
-    if (!name) return alert('Please enter your name');
+    if (!name) {
+        showAlert('Please enter your name to proceed.');
+        return;
+    }
 
     const box = state.boxes[selectedBoxIndex];
     box.claimed = true;
@@ -193,7 +208,7 @@ document.getElementById('reset-btn').onclick = () => {
             location.reload();
         }
     } else if (password !== null) {
-        alert('Incorrect password.');
+        showAlert('Incorrect password.');
     }
 };
 
