@@ -35,14 +35,16 @@ let state = {
 
 let isAdminAuthenticated = false;
 let isEditMode = false;
+let isFirstLoad = true;
 
 // Real-time listener for Firestore
 onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
         state = docSnap.data();
         updateUI();
-    } else {
-        // Initialize if empty
+        isFirstLoad = false;
+    } else if (isFirstLoad) {
+        // Initialize if empty only on first load attempt
         const initialState = {
             boxes: Array(6).fill(null).map((_, i) => ({
                 id: i,
@@ -52,6 +54,7 @@ onSnapshot(docRef, (docSnap) => {
             }))
         };
         setDoc(docRef, initialState);
+        isFirstLoad = false;
     }
 });
 
