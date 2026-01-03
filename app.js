@@ -1,11 +1,11 @@
 // Firebase Configuration from environment
 const firebaseConfig = {
-    apiKey: "FIREBASE_API_KEY",
-    authDomain: "FIREBASE_AUTH_DOMAIN",
-    projectId: "FIREBASE_PROJECT_ID",
-    storageBucket: "FIREBASE_STORAGE_BUCKET",
-    messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID",
-    appId: "FIREBASE_APP_ID"
+    apiKey: "YOUR_FIREBASE_API_KEY",
+    authDomain: "YOUR_FIREBASE_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_FIREBASE_PROJECT_ID",
+    storageBucket: "YOUR_FIREBASE_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_ID",
+    appId: "YOUR_APP_ID"
 };
 
 // Use window globals set in index.html
