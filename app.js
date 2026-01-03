@@ -62,6 +62,19 @@ onSnapshot(numbersCollection, (querySnapshot) => {
             // Natural sort for IDs (handles '0', '1', ..., '10')
             return a.id.localeCompare(b.id, undefined, {numeric: true, sensitivity: 'base'});
         });
+        
+        // If it's the first time and numbers are sequential, shuffle them (only for unclaimed)
+        const isSequential = state.boxes.every((box, i) => box.secret === i + 1);
+        const hasClaims = state.boxes.some(box => box.claimed);
+        if (isSequential && !hasClaims && state.boxes.length > 0) {
+            console.log("Sequential detected on first load, shuffling...");
+            const unclaimedSecrets = state.boxes.map(box => box.secret).sort(() => Math.random() - 0.5);
+            state.boxes.forEach((box, i) => {
+                box.secret = unclaimedSecrets[i];
+            });
+            saveAllState();
+        }
+        
         updateUI();
     }
 }, (error) => {
