@@ -1,25 +1,12 @@
 // Firebase Configuration from environment
 const firebaseConfig = {
-    apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
-    authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER",
-    projectId: "FIREBASE_PROJECT_ID_PLACEHOLDER",
-    storageBucket: "FIREBASE_STORAGE_BUCKET_PLACEHOLDER",
-    messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER",
-    appId: "FIREBASE_APP_ID_PLACEHOLDER"
+    apiKey: "FIREBASE_API_KEY",
+    authDomain: "FIREBASE_AUTH_DOMAIN",
+    projectId: "FIREBASE_PROJECT_ID",
+    storageBucket: "FIREBASE_STORAGE_BUCKET",
+    messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID",
+    appId: "FIREBASE_APP_ID"
 };
-
-// Replace placeholders with actual values injected by build/deployment
-// For local Replit environment, we can use a trick to inject them if needed
-// but for now let's just use the ones we have in secrets if we were on a server.
-// Since this is client-side, we need to embed them.
-
-// I will now replace the placeholders with the actual secret values.
-firebaseConfig.apiKey = "FIREBASE_API_KEY";
-firebaseConfig.authDomain = "FIREBASE_AUTH_DOMAIN";
-firebaseConfig.projectId = "FIREBASE_PROJECT_ID";
-firebaseConfig.storageBucket = "FIREBASE_STORAGE_BUCKET";
-firebaseConfig.messagingSenderId = "FIREBASE_MESSAGING_SENDER_ID";
-firebaseConfig.appId = "FIREBASE_APP_ID";
 
 // Use window globals set in index.html
 const { initializeApp } = window.firebaseApp;
@@ -35,16 +22,14 @@ let state = {
 
 let isAdminAuthenticated = false;
 let isEditMode = false;
-let isFirstLoad = true;
 
 // Real-time listener for Firestore
 onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
         state = docSnap.data();
         updateUI();
-        isFirstLoad = false;
-    } else if (isFirstLoad) {
-        // Initialize if empty only on first load attempt
+    } else {
+        // Initialize if empty only if it doesn't exist
         const initialState = {
             boxes: Array(6).fill(null).map((_, i) => ({
                 id: i,
@@ -54,15 +39,20 @@ onSnapshot(docRef, (docSnap) => {
             }))
         };
         setDoc(docRef, initialState);
-        isFirstLoad = false;
+    }
+}, (error) => {
+    console.error("Firestore error:", error);
+    if (error.code === 'permission-denied') {
+        showAlert('Security Error: Please check your Firestore rules in the Firebase console.');
     }
 });
 
 const saveState = async () => {
     try {
-        await updateDoc(docRef, state);
+        await setDoc(docRef, state); // Use setDoc to be more robust than updateDoc
     } catch (e) {
         console.error("Error updating Firestore:", e);
+        showAlert('Error saving: ' + e.message);
     }
 };
 
