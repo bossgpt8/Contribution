@@ -66,6 +66,14 @@
         </footer>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        window.firebaseApp = { initializeApp };
+        window.firebaseFirestore = { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc };
+    </script>
     <script type="module" src="app.js"></script>
     <div id="custom-alert" class="modal">
         <div class="modal-content">

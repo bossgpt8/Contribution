@@ -1,23 +1,54 @@
-// Mock Firebase configuration for demonstration
-// The agent will use local storage to simulate persistence for this Fast-mode session
-// unless the user adds the Firebase integration secrets later.
+// Firebase Configuration from environment
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY", // These will be replaced by the system or manual injection
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
 
-const STORAGE_KEY = 'contribution_app_state';
+// Use window globals set in index.html
+const { initializeApp } = window.firebaseApp;
+const { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc } = window.firebaseFirestore;
 
-// Initialize or load state
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-    boxes: Array(6).fill(null).map((_, i) => ({
-        id: i,
-        claimed: false,
-        name: null,
-        secret: [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5)[i]
-    }))
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const docRef = doc(db, "contribution", "state");
+
+let state = {
+    boxes: []
 };
 
 let isAdminAuthenticated = false;
 let isEditMode = false;
 
-const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+// Real-time listener for Firestore
+onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+        state = docSnap.data();
+        updateUI();
+    } else {
+        // Initialize if empty
+        const initialState = {
+            boxes: Array(6).fill(null).map((_, i) => ({
+                id: i,
+                claimed: false,
+                name: null,
+                secret: i + 1
+            }))
+        };
+        setDoc(docRef, initialState);
+    }
+});
+
+const saveState = async () => {
+    try {
+        await updateDoc(docRef, state);
+    } catch (e) {
+        console.error("Error updating Firestore:", e);
+    }
+};
 
 let selectedBoxIndex = null;
 
@@ -218,8 +249,15 @@ document.getElementById('reset-btn').onclick = () => {
     const password = prompt('Enter admin password to reset all boxes:');
     if (password === 'Jume4real') { // Simple password protection
         if (confirm('Are you sure you want to reset all boxes? This will clear all claims.')) {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
+            const initialState = {
+                boxes: Array(6).fill(null).map((_, i) => ({
+                    id: i,
+                    claimed: false,
+                    name: null,
+                    secret: i + 1
+                }))
+            };
+            setDoc(docRef, initialState);
         }
     } else if (password !== null) {
         showAlert('Incorrect password.');
