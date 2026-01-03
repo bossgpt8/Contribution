@@ -3,11 +3,11 @@ const firebaseConfig = window.firebaseConfig;
 
 // Use window globals set in index.html
 const { initializeApp } = window.firebaseApp;
-const { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc } = window.firebaseFirestore;
+const { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc, getDocs, deleteDoc } = window.firebaseFirestore;
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const docRef = doc(db, "contribution", "state");
+const numbersCollection = collection(db, "numbers");
 
 let state = {
     boxes: []
@@ -16,22 +16,32 @@ let state = {
 let isAdminAuthenticated = false;
 let isEditMode = false;
 
-// Real-time listener for Firestore
-onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-        state = docSnap.data();
-        updateUI();
+// Initialize boxes if not already loaded from Firestore
+const initLocalState = (count = 6) => {
+    state.boxes = Array(count).fill(null).map((_, i) => ({
+        id: i.toString(),
+        claimed: false,
+        name: null,
+        secret: i + 1
+    }));
+};
+
+// Listen to the "numbers" collection for changes
+onSnapshot(numbersCollection, (querySnapshot) => {
+    if (querySnapshot.empty) {
+        // If collection is empty, create initial docs (only once)
+        initLocalState();
+        state.boxes.forEach(async (box) => {
+            await setDoc(doc(db, "numbers", box.id), box);
+        });
     } else {
-        // Initialize if empty only if it doesn't exist
-        const initialState = {
-            boxes: Array(6).fill(null).map((_, i) => ({
-                id: i,
-                claimed: false,
-                name: null,
-                secret: i + 1
-            }))
-        };
-        setDoc(docRef, initialState);
+        const newBoxes = [];
+        querySnapshot.forEach((doc) => {
+            newBoxes.push(doc.data());
+        });
+        // Sort by id or a consistent key to keep grid order
+        state.boxes = newBoxes.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+        updateUI();
     }
 }, (error) => {
     console.error("Firestore error:", error);
@@ -40,12 +50,22 @@ onSnapshot(docRef, (docSnap) => {
     }
 });
 
-const saveState = async () => {
+const saveBoxState = async (box) => {
     try {
-        await setDoc(docRef, state); // Use setDoc to be more robust than updateDoc
+        await setDoc(doc(db, "numbers", box.id.toString()), box);
     } catch (e) {
         console.error("Error updating Firestore:", e);
         showAlert('Error saving: ' + e.message);
+    }
+};
+
+const saveAllState = async () => {
+    try {
+        // Save each box individually to ensure collection is sync'd
+        const promises = state.boxes.map(box => setDoc(doc(db, "numbers", box.id.toString()), box));
+        await Promise.all(promises);
+    } catch (e) {
+        console.error("Error saving all boxes:", e);
     }
 };
 
@@ -69,7 +89,7 @@ const updateUI = () => {
             input.onclick = (e) => e.stopPropagation();
             input.onchange = (e) => {
                 box.secret = parseInt(e.target.value) || 0;
-                saveState();
+                saveBoxState(box);
             };
             div.appendChild(input);
 
@@ -132,7 +152,7 @@ window.shuffleBoxes = () => {
         box.secret = uniqueNumbers[i];
     });
     
-    saveState();
+    saveAllState();
     updateUI();
     showAlert('Numbers shuffled and duplicates removed!');
 };
@@ -141,21 +161,31 @@ window.addBox = () => {
     if (!isAdminAuthenticated) return alert('Auth required');
     const nextNum = state.boxes.length + 1;
     state.boxes.push({
-        id: Date.now(),
+        id: Date.now().toString(),
         claimed: false,
         name: null,
         secret: nextNum
     });
-    saveState();
+    saveBoxState(state.boxes[state.boxes.length - 1]);
     updateUI();
 };
 
-window.removeBox = (index, event) => {
+window.removeBox = async (index, event) => {
     event.stopPropagation();
     if (!isAdminAuthenticated) return alert('Auth required');
-    state.boxes.splice(index, 1);
-    saveState();
-    updateUI();
+    const removedBox = state.boxes.splice(index, 1)[0];
+    
+    // Delete the specific document from Firestore
+    try {
+        const { deleteDoc, doc } = window.firebaseFirestore;
+        await deleteDoc(doc(db, "numbers", removedBox.id.toString()));
+        updateUI();
+    } catch (e) {
+        console.error("Error deleting box:", e);
+        // Fallback to resaving all if delete fails
+        await saveAllState();
+        updateUI();
+    }
 };
 
 // Drag and Drop Logic
@@ -183,7 +213,7 @@ function handleDrop(e) {
         state.boxes[draggedIndex] = state.boxes[targetIndex];
         state.boxes[targetIndex] = temp;
         
-        saveState();
+        saveAllState();
         updateUI();
     }
 }
@@ -215,7 +245,7 @@ document.getElementById('confirm-btn').onclick = () => {
     const box = state.boxes[selectedBoxIndex];
     box.claimed = true;
     box.name = name;
-    saveState();
+    saveBoxState(box);
 
     document.getElementById('modal').classList.remove('active');
     
@@ -248,15 +278,9 @@ document.getElementById('reset-btn').onclick = () => {
     const password = prompt('Enter admin password to reset all boxes:');
     if (password === 'Jume4real') { // Simple password protection
         if (confirm('Are you sure you want to reset all boxes? This will clear all claims.')) {
-            const initialState = {
-                boxes: Array(6).fill(null).map((_, i) => ({
-                    id: i,
-                    claimed: false,
-                    name: null,
-                    secret: i + 1
-                }))
-            };
-            setDoc(docRef, initialState);
+            // Re-initialize local state and save all to Firestore
+            initLocalState();
+            saveAllState();
         }
     } else if (password !== null) {
         showAlert('Incorrect password.');

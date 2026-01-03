@@ -1,0 +1,107 @@
+Great! Here's a simple working flow using Firestore to prevent boxes from resetting on refresh:
+
+---
+
+✅ Firestore Setup:
+Collection: "numbers"  
+Document ID: number value (e.g. "5")  
+Data: { picked: true, timestamp: ... }
+
+---
+
+✅ HTML Example:
+<div id="grid"></div>
+
+---
+
+✅ JavaScript (Using Firebase Web SDK):
+const db = firebase.firestore();
+const grid = document.getElementById("grid");
+
+// Create 1–50 boxes
+for (let i = 1; i <= 50; i++) {
+  const box = document.createElement("button");
+  box.id = `box-i`;
+  box.innerText = i;
+  box.onclick = () => pickNumber(i);
+  grid.appendChild(box);
+
+
+// On load – fetch picked numbers
+db.collection("numbers").get().then(snapshot => 
+  snapshot.forEach(doc => 
+    const number = doc.id;
+    const box = document.getElementById(`box-{number}`);
+    if (box) {
+      box.disabled = true;
+      box.classList.add("picked");
+      box.innerText = `❌ number`;
+    );
+);
+
+// When user picks a number
+function pickNumber(num) 
+  const box = document.getElementById(`box-{num}`);
+  db.collection("numbers").doc(num.toString()).set({
+    picked: true,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    box.disabled = true;
+    box.classList.add("picked");
+    box.innerText = `❌ ${num}`;
+  });
+}
+You sent
+Great! Here's a simple working flow using Firestore to prevent boxes from resetting on refresh:
+
+---
+
+✅ Firestore Setup:
+Collection: "numbers"  
+Document ID: number value (e.g. "5")  
+Data: { picked: true, timestamp: ... }
+
+---
+
+✅ HTML Example:
+<div id="grid"></div>
+
+---
+
+✅ JavaScript (Using Firebase Web SDK):
+const db = firebase.firestore();
+const grid = document.getElementById("grid");
+
+// Create 1–50 boxes
+for (let i = 1; i <= 50; i++) {
+  const box = document.createElement("button");
+  box.id = `box-i`;
+  box.innerText = i;
+  box.onclick = () => pickNumber(i);
+  grid.appendChild(box);
+
+
+// On load – fetch picked numbers
+db.collection("numbers").get().then(snapshot => 
+  snapshot.forEach(doc => 
+    const number = doc.id;
+    const box = document.getElementById(`box-{number}`);
+    if (box) {
+      box.disabled = true;
+      box.classList.add("picked");
+      box.innerText = `❌ number`;
+    );
+);
+
+// When user picks a number
+function pickNumber(num) 
+  const box = document.getElementById(`box-{num}`);
+  db.collection("numbers").doc(num.toString()).set({
+    picked: true,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    box.disabled = true;
+    box.classList.add("picked");
+    box.innerText = `❌ ${num}`;
+  });
+}
