@@ -72,7 +72,7 @@
         import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        // Manual Configuration with literal secrets
+        // Configuration with injected secrets
         window.firebaseConfig = {
             apiKey: "FIREBASE_API_KEY",
             authDomain: "FIREBASE_AUTH_DOMAIN",
