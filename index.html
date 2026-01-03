@@ -81,7 +81,11 @@
             messagingSenderId: "525640988420",
             appId: "1:525640988420:web:5ccd4d2a99531f151d0251"
         };
+        // This will be replaced by Vercel injection, or we'll use a local fallback
         window.adminPassword = "ADMIN_PASSWORD";
+        if (window.adminPassword === "ADMIN" + "_PASSWORD") {
+            window.adminPassword = "Jume4real";
+        }
 
         const app = initializeApp(window.firebaseConfig);
         window.firebaseApp = app;

@@ -260,6 +260,8 @@ window.handleBoxClick = (index) => {
     const alreadyClaimed = state.boxes.find(b => b.userId === currentUser.uid);
     if (alreadyClaimed) {
         selectedBoxIndex = state.boxes.indexOf(alreadyClaimed);
+        showAlert(`You have already claimed a box! Your contribution number is: ${alreadyClaimed.secret}`);
+        // Still show the reveal modal for them to share/copy
         document.getElementById('result-number').textContent = alreadyClaimed.secret;
         document.getElementById('reveal-modal').classList.add('active');
         return;
