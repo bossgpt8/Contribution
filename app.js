@@ -1,12 +1,5 @@
-// Firebase Configuration from environment
-const firebaseConfig = {
-    apiKey: "YOUR_FIREBASE_API_KEY",
-    authDomain: "YOUR_FIREBASE_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_FIREBASE_PROJECT_ID",
-    storageBucket: "YOUR_FIREBASE_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_ID",
-    appId: "YOUR_APP_ID"
-};
+// Firebase Configuration
+const firebaseConfig = window.firebaseConfig;
 
 // Use window globals set in index.html
 const { initializeApp } = window.firebaseApp;
