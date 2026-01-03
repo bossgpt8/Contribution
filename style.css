@@ -63,32 +63,35 @@ header p {
 .box {
     aspect-ratio: 1 / 1;
     background-color: var(--card-bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--primary); /* Made available boxes stand out more */
     border-radius: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-muted);
+    font-weight: 600;
+    color: var(--primary); /* Brighter text for available boxes */
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
     padding: 15px;
+    box-shadow: 0 4px 10px rgba(251, 191, 36, 0.1); /* Subtle glow for available */
 }
 
 .box:hover {
     border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
 }
 
 .box.claimed {
-    background-color: #1e293b50;
-    border-color: var(--border);
+    background-color: #0f172a;
+    border: 1px solid #1e293b;
     color: #334155;
-    cursor: not-allowed;
-    pointer-events: none;
+    cursor: pointer; /* Allow clicking to show "already used" message */
+    pointer-events: auto;
+    box-shadow: none;
+    opacity: 0.4;
 }
 
 .admin-panel {

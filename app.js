@@ -137,7 +137,10 @@ function handleDragEnd() {
 }
 
 window.handleBoxClick = (index) => {
-    if (state.boxes[index].claimed) return;
+    if (state.boxes[index].claimed) {
+        alert('This box has already been claimed! Please select another available box.');
+        return;
+    }
     selectedBoxIndex = index;
     document.getElementById('modal').classList.add('active');
 };
