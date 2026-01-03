@@ -148,8 +148,11 @@ function handleDrop(e) {
     e.preventDefault();
     const targetIndex = parseInt(this.id.split('-')[1]);
     if (draggedIndex !== targetIndex) {
-        const item = state.boxes.splice(draggedIndex, 1)[0];
-        state.boxes.splice(targetIndex, 0, item);
+        // Swap the two boxes
+        const temp = state.boxes[draggedIndex];
+        state.boxes[draggedIndex] = state.boxes[targetIndex];
+        state.boxes[targetIndex] = temp;
+        
         saveState();
         updateUI();
     }
