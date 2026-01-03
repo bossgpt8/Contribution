@@ -46,7 +46,10 @@ onSnapshot(numbersCollection, (querySnapshot) => {
     if (querySnapshot.empty) {
         // If collection is empty, create initial docs (only once)
         initLocalState();
-        state.boxes.forEach(async (box) => {
+        // Shuffle immediately for first load
+        const secrets = state.boxes.map(b => b.secret).sort(() => Math.random() - 0.5);
+        state.boxes.forEach(async (box, i) => {
+            box.secret = secrets[i];
             await setDoc(doc(db, "numbers", box.id), box);
         });
     } else {
@@ -55,7 +58,10 @@ onSnapshot(numbersCollection, (querySnapshot) => {
             newBoxes.push(doc.data());
         });
         // Sort by id or a consistent key to keep grid order
-        state.boxes = newBoxes.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+        state.boxes = newBoxes.sort((a, b) => {
+            // Natural sort for IDs (handles '0', '1', ..., '10')
+            return a.id.localeCompare(b.id, undefined, {numeric: true, sensitivity: 'base'});
+        });
         updateUI();
     }
 }, (error) => {
@@ -158,18 +164,24 @@ window.toggleAdminMode = () => {
 window.shuffleBoxes = () => {
     if (!isAdminAuthenticated) return showAlert('Authentication required.');
     
-    // Create a unique list of numbers from 1 to the current number of boxes
-    const count = state.boxes.length;
-    const uniqueNumbers = Array.from({length: count}, (_, i) => i + 1)
-        .sort(() => Math.random() - 0.5);
+    // Filter out boxes that are already claimed
+    const unclaimedBoxes = state.boxes.filter(box => !box.claimed);
     
-    state.boxes.forEach((box, i) => {
-        box.secret = uniqueNumbers[i];
+    if (unclaimedBoxes.length === 0) {
+        return showAlert('All boxes are claimed. No numbers left to shuffle.');
+    }
+
+    // Extract secrets from unclaimed boxes and shuffle them
+    const unclaimedSecrets = unclaimedBoxes.map(box => box.secret).sort(() => Math.random() - 0.5);
+    
+    // Re-assign shuffled secrets back to unclaimed boxes
+    unclaimedBoxes.forEach((box, i) => {
+        box.secret = unclaimedSecrets[i];
     });
     
     saveAllState();
     updateUI();
-    showAlert('Numbers shuffled and duplicates removed!');
+    showAlert('Available numbers shuffled!');
 };
 
 window.addBox = () => {
