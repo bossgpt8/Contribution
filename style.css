@@ -287,11 +287,18 @@ button {
 }
 
 #reset-btn {
-    background: transparent;
-    border: 1px solid #334155;
-    color: #475569;
-    font-size: 0.75rem;
-    padding: 8px 16px;
+    background-color: transparent;
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 20px;
+    opacity: 0.8;
+    border: 1px solid #ef4444;
+    transition: all 0.2s;
+}
+
+#reset-btn:hover {
+    opacity: 1;
+    background-color: rgba(239, 68, 68, 0.1);
 }
 
 .box {

@@ -199,7 +199,7 @@ window.shuffleBoxes = () => {
 };
 
 window.addBox = () => {
-    if (!isAdminAuthenticated) return alert('Auth required');
+    if (!isAdminAuthenticated) return showAlert('Authentication required.');
     const nextNum = state.boxes.length + 1;
     state.boxes.push({
         id: Date.now().toString(),
@@ -213,7 +213,7 @@ window.addBox = () => {
 
 window.removeBox = async (index, event) => {
     event.stopPropagation();
-    if (!isAdminAuthenticated) return alert('Auth required');
+    if (!isAdminAuthenticated) return showAlert('Authentication required.');
     const removedBox = state.boxes.splice(index, 1)[0];
     
     // Delete the specific document from Firestore
