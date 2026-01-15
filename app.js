@@ -76,6 +76,11 @@ onSnapshot(numbersCollection, (querySnapshot) => {
         }
         
         updateUI();
+        // Hide loading overlay once data is loaded
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
+        }
     }
 }, (error) => {
     console.error("Firestore error:", error);
