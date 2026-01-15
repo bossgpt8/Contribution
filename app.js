@@ -203,6 +203,20 @@ window.shuffleBoxes = () => {
     showAlert('Available numbers shuffled!');
 };
 
+window.reorderNumbers = async () => {
+    if (!isAdminAuthenticated) return;
+    
+    // Assign new sequential numbers based on current count
+    state.boxes.forEach((box, i) => {
+        if (!box.claimed) {
+            box.secret = i + 1;
+        }
+    });
+    
+    await saveAllState();
+    updateUI();
+};
+
 window.addBox = () => {
     if (!isAdminAuthenticated) return showAlert('Authentication required.');
     const nextNum = state.boxes.length + 1;
@@ -225,10 +239,17 @@ window.removeBox = async (index, event) => {
     try {
         const { deleteDoc, doc } = window.firebaseFirestore;
         await deleteDoc(doc(db, "numbers", removedBox.id.toString()));
+        
+        // After deletion, re-index remaining unclaimed boxes so numbers match box count
+        state.boxes.forEach((box, i) => {
+            if (!box.claimed) {
+                box.secret = i + 1;
+            }
+        });
+        await saveAllState();
         updateUI();
     } catch (e) {
         console.error("Error deleting box:", e);
-        // Fallback to resaving all if delete fails
         await saveAllState();
         updateUI();
     }
