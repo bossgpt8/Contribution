@@ -337,18 +337,45 @@ document.getElementById('copy-btn').onclick = () => {
     });
 };
 
-document.getElementById('reset-btn').onclick = () => {
+window.resetAllBoxes = async () => {
     const password = prompt('Enter admin password to reset all boxes:');
-    if (password === 'Jume4real') { // Simple password protection
+    if (password === 'Jume4real') {
         if (confirm('Are you sure you want to reset all boxes? This will clear all claims.')) {
-            // Re-initialize local state and save all to Firestore
-            initLocalState();
-            saveAllState();
+            try {
+                // 1. Get all current boxes from Firestore
+                const querySnapshot = await getDocs(numbersCollection);
+                
+                // 2. Delete all existing documents in the collection
+                const deletePromises = [];
+                querySnapshot.forEach((document) => {
+                    deletePromises.push(deleteDoc(doc(db, "numbers", document.id)));
+                });
+                await Promise.all(deletePromises);
+
+                // 3. Re-initialize and save fresh set of 6 boxes
+                const count = 6;
+                const freshBoxes = Array(count).fill(null).map((_, i) => ({
+                    id: i.toString(),
+                    claimed: false,
+                    name: null,
+                    secret: i + 1
+                }));
+
+                const savePromises = freshBoxes.map(box => setDoc(doc(db, "numbers", box.id), box));
+                await Promise.all(savePromises);
+                
+                showAlert('All boxes have been reset to the default 6.');
+            } catch (e) {
+                console.error("Error resetting boxes:", e);
+                showAlert('Error resetting boxes: ' + e.message);
+            }
         }
     } else if (password !== null) {
         showAlert('Incorrect password.');
     }
 };
+
+document.getElementById('reset-btn').onclick = window.resetAllBoxes;
 
 document.getElementById('close-reveal-btn').onclick = () => {
     document.getElementById('reveal-modal').classList.remove('active');
