@@ -206,10 +206,23 @@ window.shuffleBoxes = () => {
 window.reorderNumbers = async () => {
     if (!isAdminAuthenticated) return;
     
-    // Assign new sequential numbers based on current count
-    state.boxes.forEach((box, i) => {
+    // Get all secrets already claimed
+    const claimedSecrets = state.boxes
+        .filter(box => box.claimed)
+        .map(box => box.secret);
+    
+    // Create a list of available numbers starting from 1
+    // excluding those already claimed
+    let nextAvailable = 1;
+    
+    state.boxes.forEach((box) => {
         if (!box.claimed) {
-            box.secret = i + 1;
+            // Find the next number that isn't claimed
+            while (claimedSecrets.includes(nextAvailable)) {
+                nextAvailable++;
+            }
+            box.secret = nextAvailable;
+            nextAvailable++;
         }
     });
     
@@ -219,7 +232,18 @@ window.reorderNumbers = async () => {
 
 window.addBox = () => {
     if (!isAdminAuthenticated) return showAlert('Authentication required.');
-    const nextNum = state.boxes.length + 1;
+    
+    const claimedSecrets = state.boxes
+        .filter(box => box.claimed)
+        .map(box => box.secret);
+    
+    let nextNum = 1;
+    // Find the smallest number not currently used as a secret (claimed or unclaimed)
+    const allSecrets = state.boxes.map(b => b.secret);
+    while (allSecrets.includes(nextNum)) {
+        nextNum++;
+    }
+
     state.boxes.push({
         id: Date.now().toString(),
         claimed: false,
@@ -240,12 +264,22 @@ window.removeBox = async (index, event) => {
         const { deleteDoc, doc } = window.firebaseFirestore;
         await deleteDoc(doc(db, "numbers", removedBox.id.toString()));
         
-        // After deletion, re-index remaining unclaimed boxes so numbers match box count
-        state.boxes.forEach((box, i) => {
+        // After deletion, re-index remaining unclaimed boxes
+        const claimedSecrets = state.boxes
+            .filter(box => box.claimed)
+            .map(box => box.secret);
+            
+        let nextAvailable = 1;
+        state.boxes.forEach((box) => {
             if (!box.claimed) {
-                box.secret = i + 1;
+                while (claimedSecrets.includes(nextAvailable)) {
+                    nextAvailable++;
+                }
+                box.secret = nextAvailable;
+                nextAvailable++;
             }
         });
+
         await saveAllState();
         updateUI();
     } catch (e) {
